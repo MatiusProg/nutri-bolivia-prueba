@@ -10,6 +10,7 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import { supabase } from '@/integrations/supabase/client-unsafe';
 import { RecetaCardImagen } from '@/components/recetas/RecetaCardImagen';
 import { PromedioEstrellas } from '@/components/recetas/PromedioEstrellas';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface RecetaTrending {
   id: string;
@@ -21,6 +22,7 @@ interface RecetaTrending {
   total_calificaciones: number;
   autor_nombre: string;
   tiempo_preparacion: number;
+  autor_avatar?: string;
 }
 
 interface Stats {
@@ -65,6 +67,7 @@ export default function Home() {
         total_calificaciones: r.total_calificaciones || 0,
         autor_nombre: r.autor_nombre || 'Usuario',
         tiempo_preparacion: r.tiempo_preparacion || 0,
+        autor_avatar: r.autor_avatar || null,
       })) || [];
 
       setRecetasTrending(trending);
@@ -200,11 +203,17 @@ export default function Home() {
                 </div>
 
                 <div className="p-6 pt-2">
+                  {/* Autor */}
                   <div className="flex items-center gap-2 mb-3">
-                    <Badge variant="secondary" className="gap-1">
-                      <TrendingUp className="h-3 w-3" />
-                      Popular
-                    </Badge>
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={receta.autor_avatar || undefined} />
+                      <AvatarFallback className="text-xs">
+                        {receta.autor_nombre?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm text-muted-foreground truncate flex-1">
+                      {receta.autor_nombre}
+                    </span>
                     {receta.tiempo_preparacion > 0 && (
                       <span className="text-xs text-muted-foreground">
                         {receta.tiempo_preparacion} min

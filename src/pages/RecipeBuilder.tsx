@@ -167,11 +167,21 @@ export default function RecipeBuilder() {
     setSaving(true);
     try {
       const nutrientes = calculateNutrients();
-      const ingredientesData = ingredients.map(({ alimento, cantidad_g }) => ({
-        alimento_id: alimento.id_alimento,
-        nombre: alimento.nombre_alimento,
-        cantidad_g,
-      }));
+      const ingredientesData = ingredients.map(({ alimento, cantidad_g }) => {
+        const factor = cantidad_g / 100;
+        return {
+          id_alimento: alimento.id_alimento,
+          nombre_alimento: alimento.nombre_alimento,
+          cantidad_g,
+          nutrientes: {
+            energia_kcal: (alimento.energia_kcal || 0) * factor,
+            proteinas_g: (alimento.proteinas_g || 0) * factor,
+            grasas_g: (alimento.grasas_g || 0) * factor,
+            hidratoscarbonototal_g: (alimento.hidratoscarbonototal_g || 0) * factor,
+            fibracruda_g: (alimento.fibracruda_g || 0) * factor,
+          }
+        };
+      });
 
       // Guardar receta y obtener el ID
       const { data: recetaData, error } = await (supabase as any)
