@@ -123,24 +123,31 @@ export function AccionModeracionModal({
       }
       // solicitar_cambios no modifica la receta
 
-      // 2. Enviar notificación al usuario dueño
+      // 2. Enviar notificación al usuario dueño usando RPC con SECURITY DEFINER
       if (usuarioDuenoId) {
-        const { error: notifError } = await (supabase as any)
-          .from('notificaciones')
-          .insert({
-            usuario_id: usuarioDuenoId,
-            tipo: 'moderacion',
-            mensaje: mensaje,
-            receta_id: accion === 'eliminar' ? null : reporte.receta_id,
-            usuario_actor_id: user.id,
-            metadata: {
-              accion_moderacion: accion,
-              receta_nombre: recetaNombre,
-              motivo_reporte: reporte.motivo,
-            },
-          });
+        const { data: notifId, error: notifError } = await supabase.rpc('enviar_notificacion_moderacion', {
+          p_usuario_destino_id: usuarioDuenoId,
+          p_moderador_id: user.id,
+          p_tipo: 'moderacion',
+          p_mensaje: mensaje,
+          p_receta_id: accion === 'eliminar' ? null : reporte.receta_id,
+          p_metadata: {
+            accion_moderacion: accion,
+            receta_nombre: recetaNombre,
+            motivo_reporte: reporte.motivo,
+          },
+        });
+        
         if (notifError) {
           console.error('Error enviando notificación:', notifError);
+          // Mostrar warning pero no fallar (la acción principal ya se completó)
+          toast({
+            title: 'Advertencia',
+            description: 'La acción se completó pero no se pudo notificar al usuario',
+            variant: 'destructive',
+          });
+        } else {
+          console.log('[Moderación] Notificación enviada con ID:', notifId);
         }
       }
 
