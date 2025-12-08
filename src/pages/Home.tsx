@@ -65,9 +65,9 @@ export default function Home() {
         contador_guardados: r.contador_guardados || 0,
         promedio_calificacion: r.promedio_calificacion || 0,
         total_calificaciones: r.total_calificaciones || 0,
-        autor_nombre: r.autor_nombre || 'Usuario',
+        autor_nombre: (r.perfil as any)?.nombre_completo || 'Usuario',
         tiempo_preparacion: r.tiempo_preparacion || 0,
-        autor_avatar: r.autor_avatar || null,
+        autor_avatar: (r.perfil as any)?.avatar_url || null,
       })) || [];
 
       setRecetasTrending(trending);
