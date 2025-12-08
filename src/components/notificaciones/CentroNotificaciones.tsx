@@ -63,6 +63,7 @@ export function CentroNotificaciones() {
 
   useEffect(() => {
     if (user && open) {
+      console.log('[Notificaciones] Cargando para usuario:', user.id);
       cargarNotificaciones();
       
       // Suscripción a tiempo real
@@ -76,11 +77,14 @@ export function CentroNotificaciones() {
             table: 'notificaciones',
             filter: `usuario_id=eq.${user.id}`,
           },
-          () => {
+          (payload) => {
+            console.log('[Notificaciones] Cambio detectado:', payload);
             cargarNotificaciones();
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log('[Notificaciones] Estado del canal realtime:', status);
+        });
 
       return () => {
         supabase.removeChannel(channel);
@@ -106,7 +110,12 @@ export function CentroNotificaciones() {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('[Notificaciones] Error en query:', error);
+        throw error;
+      }
+      
+      console.log('[Notificaciones] Datos recibidos:', data?.length || 0, 'notificaciones');
       setNotificaciones(data || []);
     } catch (error) {
       console.error('Error cargando notificaciones:', error);
