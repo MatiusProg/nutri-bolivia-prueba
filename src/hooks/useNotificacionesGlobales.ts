@@ -33,28 +33,38 @@ export function useNotificacionesGlobales(): UseNotificacionesGlobalesReturn {
   }, []);
 
   const reproducirSonido = useCallback(() => {
-    if (audioRef.current) {
-      // Usar un sonido de notificación simple generado
-      // En producción podrías usar un archivo mp3 real
-      try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
+      // Función para crear un tono con envelope suave
+      const playTone = (frequency: number, startTime: number, duration: number) => {
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
         
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         
-        oscillator.frequency.value = 800;
         oscillator.type = 'sine';
+        oscillator.frequency.value = frequency;
         
-        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        // Envelope suave para evitar clics
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.25, startTime + 0.02);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
         
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-      } catch (error) {
-        console.log('[Notificaciones] No se pudo reproducir sonido:', error);
-      }
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+      };
+      
+      const now = audioContext.currentTime;
+      
+      // Sonido "ding-dong" agradable con dos tonos armónicos
+      playTone(830, now, 0.15);          // Mi5 - "ding"
+      playTone(1046, now + 0.12, 0.2);   // Do6 - "dong"
+      
+      console.log('[Notificaciones] 🔔 Sonido reproducido');
+    } catch (error) {
+      console.log('[Notificaciones] No se pudo reproducir sonido:', error);
     }
   }, []);
 
