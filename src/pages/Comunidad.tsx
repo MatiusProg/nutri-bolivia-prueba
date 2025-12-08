@@ -103,10 +103,14 @@ export default function Comunidad() {
           dificultad: receta.dificultad as TDificultad | null,
           etiquetas: receta.etiquetas as string[] | null,
           es_duplicada: receta.es_duplicada ?? false,
-          perfil: {
-            nombre_completo: receta.autor_nombre,
-            avatar_url: receta.autor_avatar,
-            email: "",
+          perfil: receta.perfil as {
+            nombre_completo: string;
+            avatar_url: string;
+            email: string;
+          } || {
+            nombre_completo: 'Usuario',
+            avatar_url: '',
+            email: '',
           },
           // ✅ USAR DIRECTAMENTE las columnas que YA EXISTEN en la vista
           promedio_calificacion: receta.promedio_calificacion || 0,

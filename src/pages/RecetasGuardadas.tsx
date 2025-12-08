@@ -84,12 +84,12 @@ export default function RecetasGuardadas() {
         });
       });
   
-      // 4. Adaptar datos (USAR columnas existentes de la vista)
+      // 4. Adaptar datos (USAR objeto perfil de la vista)
       const recetasAdaptadas = recetasData?.map((receta: any) => ({
         ...receta,
-        perfil: {
-          nombre_completo: receta.autor_nombre,
-          avatar_url: receta.autor_avatar,
+        perfil: receta.perfil || {
+          nombre_completo: 'Usuario',
+          avatar_url: '',
           email: ''
         },
         // ✅ USAR DIRECTAMENTE las columnas de la vista
