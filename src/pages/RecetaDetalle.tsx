@@ -311,9 +311,9 @@ export default function RecetaDetalle() {
           Volver
         </Button>
 
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-4xl font-bold mb-2">{receta.nombre}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 leading-tight">{receta.nombre}</h1>
             {receta.descripcion && (
               <p className="text-lg text-muted-foreground mb-4">{receta.descripcion}</p>
             )}
@@ -352,17 +352,17 @@ export default function RecetaDetalle() {
             </div>
           </div>
 
-          {/* Acciones */}
-          <div className="flex gap-2 flex-wrap">
+          {/* Acciones - grid en móvil, flex en desktop */}
+          <div className="grid grid-cols-2 sm:flex gap-2 w-full sm:w-auto">
             {esOwner ? (
               <>
                 <Button variant="outline" onClick={() => navigate(`/mis-recetas`)} className="gap-2">
                   <Edit className="h-4 w-4" />
-                  Editar
+                  <span className="hidden sm:inline">Editar</span>
                 </Button>
                 <Button variant="outline" onClick={() => setShowDeleteDialog(true)} className="gap-2 text-destructive hover:text-destructive">
                   <Trash2 className="h-4 w-4" />
-                  Eliminar
+                  <span className="hidden sm:inline">Eliminar</span>
                 </Button>
               </>
             ) : (
@@ -373,7 +373,7 @@ export default function RecetaDetalle() {
                   className="gap-2"
                 >
                   <Copy className="h-4 w-4" />
-                  Copiar
+                  <span className="hidden sm:inline">Copiar</span>
                 </Button>
                 <Button
                   variant={hasLiked ? 'default' : 'outline'}
@@ -391,14 +391,14 @@ export default function RecetaDetalle() {
                   className="gap-2"
                 >
                   {actionLoading === 'save' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bookmark className={`h-4 w-4 ${hasSaved ? 'fill-current' : ''}`} />}
-                  Guardar
+                  <span className="hidden sm:inline">Guardar</span>
                 </Button>
                 {user && (
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setReportarModalOpen(true)}
-                    className="text-muted-foreground hover:text-destructive"
+                    className="text-muted-foreground hover:text-destructive col-span-2 sm:col-span-1"
                     title="Reportar receta"
                   >
                     <Flag className="h-4 w-4" />
@@ -463,9 +463,50 @@ export default function RecetaDetalle() {
           </Card>
 
           {/* Desglose Nutricional por Ingrediente */}
-          <Card className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Desglose Nutricional por Ingrediente</h2>
-            <div className="overflow-x-auto">
+          <Card className="p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">Desglose Nutricional</h2>
+            
+            {/* Versión móvil - tarjetas */}
+            <div className="block md:hidden space-y-3">
+              {ingredientesDetallados.map((ing, index) => (
+                <div key={index} className="p-4 bg-muted/50 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold">{ing.nombre}</h4>
+                    <Badge variant="outline">{ing.cantidad_g}g</Badge>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-sm">
+                    <div className="text-center p-2 bg-background rounded">
+                      <p className="text-xs text-muted-foreground">Energía</p>
+                      <p className="font-semibold">{ing.nutrientes.energia_kcal.toFixed(0)}</p>
+                      <p className="text-xs text-muted-foreground">kcal</p>
+                    </div>
+                    <div className="text-center p-2 bg-background rounded">
+                      <p className="text-xs text-muted-foreground">Proteínas</p>
+                      <p className="font-semibold">{ing.nutrientes.proteinas_g.toFixed(1)}</p>
+                      <p className="text-xs text-muted-foreground">g</p>
+                    </div>
+                    <div className="text-center p-2 bg-background rounded">
+                      <p className="text-xs text-muted-foreground">Carbos</p>
+                      <p className="font-semibold">{ing.nutrientes.hidratoscarbonototal_g.toFixed(1)}</p>
+                      <p className="text-xs text-muted-foreground">g</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm mt-2">
+                    <div className="text-center p-2 bg-background rounded">
+                      <p className="text-xs text-muted-foreground">Grasas</p>
+                      <p className="font-semibold">{ing.nutrientes.grasas_g.toFixed(1)}g</p>
+                    </div>
+                    <div className="text-center p-2 bg-background rounded">
+                      <p className="text-xs text-muted-foreground">Fibra</p>
+                      <p className="font-semibold">{ing.nutrientes.fibracruda_g.toFixed(1)}g</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Versión desktop - tabla */}
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -498,7 +539,7 @@ export default function RecetaDetalle() {
 
         {/* Nutrientes Totales */}
         <div className="space-y-6">
-          <Card className="p-6 sticky top-4">
+          <Card className="p-4 sm:p-6 lg:sticky lg:top-4">
             <h2 className="text-2xl font-bold mb-4">Nutrientes Totales</h2>
             <NutrientesExpandibles 
               nutrientes={nutrientes}

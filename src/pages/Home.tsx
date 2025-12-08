@@ -112,7 +112,7 @@ export default function Home() {
               <span className="text-white font-medium">100% Datos Bolivianos</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
               Nutrición Boliviana al Alcance de Todos
             </h1>
             
@@ -142,22 +142,22 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Stats animadas */}
-            <div className="grid grid-cols-3 gap-6 max-w-3xl mx-auto">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <BookOpen className="h-8 w-8 text-white mx-auto mb-2" />
-                <p className="text-4xl font-bold text-white mb-1">{stats.totalAlimentos}+</p>
-                <p className="text-white/80 text-sm">Alimentos</p>
+            {/* Stats animadas - responsivas */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-6 max-w-3xl mx-auto">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                <BookOpen className="h-5 w-5 sm:h-8 sm:w-8 text-white mx-auto mb-1 sm:mb-2" />
+                <p className="text-xl sm:text-4xl font-bold text-white mb-0.5 sm:mb-1">{stats.totalAlimentos}+</p>
+                <p className="text-white/80 text-xs sm:text-sm">Alimentos</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <ChefHat className="h-8 w-8 text-white mx-auto mb-2" />
-                <p className="text-4xl font-bold text-white mb-1">{stats.totalRecetas}+</p>
-                <p className="text-white/80 text-sm">Recetas</p>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-6 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <ChefHat className="h-5 w-5 sm:h-8 sm:w-8 text-white mx-auto mb-1 sm:mb-2" />
+                <p className="text-xl sm:text-4xl font-bold text-white mb-0.5 sm:mb-1">{stats.totalRecetas}+</p>
+                <p className="text-white/80 text-xs sm:text-sm">Recetas</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                <Users className="h-8 w-8 text-white mx-auto mb-2" />
-                <p className="text-4xl font-bold text-white mb-1">{stats.totalUsuarios}+</p>
-                <p className="text-white/80 text-sm">Usuarios</p>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 sm:p-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+                <Users className="h-5 w-5 sm:h-8 sm:w-8 text-white mx-auto mb-1 sm:mb-2" />
+                <p className="text-xl sm:text-4xl font-bold text-white mb-0.5 sm:mb-1">{stats.totalUsuarios}+</p>
+                <p className="text-white/80 text-xs sm:text-sm">Usuarios</p>
               </div>
             </div>
           </div>

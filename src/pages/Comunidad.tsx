@@ -255,17 +255,19 @@ export default function Comunidad() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-3 bg-primary/10 rounded-xl">
-            <Users className="h-8 w-8 text-primary" />
+          <div className="p-2 sm:p-3 bg-primary/10 rounded-xl">
+            <Users className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">Comunidad</h1>
-            <p className="text-muted-foreground mt-1">Descubre recetas compartidas</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">Comunidad</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">Descubre recetas compartidas</p>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-4">
-          <div className="col-span-2 relative">
+        {/* Filtros responsivos */}
+        <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-4 md:gap-4">
+          {/* Búsqueda - ancho completo en móvil */}
+          <div className="md:col-span-2 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar recetas..."
@@ -274,29 +276,33 @@ export default function Comunidad() {
               className="pl-10"
             />
           </div>
-          <Select value={filtroDificultad} onValueChange={(v) => setFiltroDificultad(v as any)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Dificultad" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">Todas</SelectItem>
-              {Object.entries(DIFICULTADES).map(([k, v]) => (
-                <SelectItem key={k} value={k}>
-                  {v}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={ordenarPor} onValueChange={(v) => setOrdenarPor(v as any)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="fecha">Más recientes</SelectItem>
-              <SelectItem value="popularidad">Más populares</SelectItem>
-              <SelectItem value="tiempo">Menos tiempo</SelectItem>
-            </SelectContent>
-          </Select>
+          
+          {/* Selectores en fila en móvil */}
+          <div className="grid grid-cols-2 gap-2 md:contents">
+            <Select value={filtroDificultad} onValueChange={(v) => setFiltroDificultad(v as any)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Dificultad" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todas">Todas</SelectItem>
+                {Object.entries(DIFICULTADES).map(([k, v]) => (
+                  <SelectItem key={k} value={k}>
+                    {v}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={ordenarPor} onValueChange={(v) => setOrdenarPor(v as any)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fecha">Más recientes</SelectItem>
+                <SelectItem value="popularidad">Más populares</SelectItem>
+                <SelectItem value="tiempo">Menos tiempo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
