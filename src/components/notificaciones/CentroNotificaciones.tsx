@@ -14,6 +14,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client-unsafe';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotificacionesGlobales } from '@/hooks/useNotificacionesGlobales';
 import { toast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -56,41 +57,26 @@ const TITULOS_TIPO: Record<TipoNotificacion, string> = {
 
 export function CentroNotificaciones() {
   const { user } = useAuth();
+  const { contadorNoLeidas, hayNuevas, resetHayNuevas, refetchContador } = useNotificacionesGlobales();
   const [notificaciones, setNotificaciones] = useState<INotificacion[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [filtroTipo, setFiltroTipo] = useState<TipoNotificacion | 'todas'>('todas');
 
+  // Cuando se abre el panel, resetear indicador de nuevas y cargar lista
   useEffect(() => {
-    if (user && open) {
-      console.log('[Notificaciones] Cargando para usuario:', user.id);
+    if (open && user) {
+      resetHayNuevas();
       cargarNotificaciones();
-      
-      // Suscripción a tiempo real
-      const channel = supabase
-        .channel('notificaciones-cambios')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'notificaciones',
-            filter: `usuario_id=eq.${user.id}`,
-          },
-          (payload) => {
-            console.log('[Notificaciones] Cambio detectado:', payload);
-            cargarNotificaciones();
-          }
-        )
-        .subscribe((status) => {
-          console.log('[Notificaciones] Estado del canal realtime:', status);
-        });
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     }
-  }, [user, open]);
+  }, [open, user, resetHayNuevas]);
+
+  // Recargar lista cuando cambia el filtro
+  useEffect(() => {
+    if (open && user) {
+      cargarNotificaciones();
+    }
+  }, [filtroTipo]);
 
   const cargarNotificaciones = async () => {
     if (!user) return;
@@ -115,7 +101,6 @@ export function CentroNotificaciones() {
         throw error;
       }
       
-      console.log('[Notificaciones] Datos recibidos:', data?.length || 0, 'notificaciones');
       setNotificaciones(data || []);
     } catch (error) {
       console.error('Error cargando notificaciones:', error);
@@ -136,6 +121,9 @@ export function CentroNotificaciones() {
       setNotificaciones(prev =>
         prev.map(n => (n.id === notificacionId ? { ...n, leida: true } : n))
       );
+      
+      // Refrescar contador global
+      refetchContador();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -158,6 +146,9 @@ export function CentroNotificaciones() {
       if (error) throw error;
 
       setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })));
+      
+      // Refrescar contador global
+      refetchContador();
 
       toast({
         title: 'Notificaciones marcadas',
@@ -173,7 +164,6 @@ export function CentroNotificaciones() {
   };
 
   const getTitulo = (notificacion: INotificacion): string => {
-    // Para moderación, usar el metadata si existe
     if (notificacion.tipo === 'moderacion' && notificacion.metadata?.accion_moderacion) {
       const accion = notificacion.metadata.accion_moderacion;
       if (accion === 'eliminar') return '⚠️ Tu receta fue eliminada';
@@ -183,7 +173,6 @@ export function CentroNotificaciones() {
     return TITULOS_TIPO[notificacion.tipo] || 'Notificación';
   };
 
-  const noLeidas = notificaciones.filter(n => !n.leida).length;
   const notificacionesFiltradas =
     filtroTipo === 'todas'
       ? notificaciones
@@ -194,14 +183,21 @@ export function CentroNotificaciones() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notificaciones">
-          <Bell className="h-5 w-5" />
-          {noLeidas > 0 && (
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative" 
+          aria-label="Notificaciones"
+        >
+          <Bell className={`h-5 w-5 transition-colors ${hayNuevas ? 'text-primary animate-pulse' : ''}`} />
+          {contadorNoLeidas > 0 && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+              className={`absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs ${
+                hayNuevas ? 'animate-bounce' : ''
+              }`}
             >
-              {noLeidas > 9 ? '9+' : noLeidas}
+              {contadorNoLeidas > 9 ? '9+' : contadorNoLeidas}
             </Badge>
           )}
         </Button>
@@ -211,8 +207,8 @@ export function CentroNotificaciones() {
         <SheetHeader>
           <SheetTitle>Notificaciones</SheetTitle>
           <SheetDescription>
-            {noLeidas > 0
-              ? `Tienes ${noLeidas} notificación${noLeidas > 1 ? 'es' : ''} sin leer`
+            {contadorNoLeidas > 0
+              ? `Tienes ${contadorNoLeidas} notificación${contadorNoLeidas > 1 ? 'es' : ''} sin leer`
               : 'No tienes notificaciones sin leer'}
           </SheetDescription>
         </SheetHeader>
@@ -242,7 +238,7 @@ export function CentroNotificaciones() {
           </div>
 
           {/* Acción marcar todas como leídas */}
-          {noLeidas > 0 && (
+          {contadorNoLeidas > 0 && (
             <Button
               variant="outline"
               size="sm"

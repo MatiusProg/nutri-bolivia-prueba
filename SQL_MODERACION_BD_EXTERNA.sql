@@ -4,6 +4,7 @@
 -- ============================================================
 
 -- 1. Función para eliminar receta (solo admins)
+-- ACTUALIZADA: Elimina dependencias antes de la receta
 CREATE OR REPLACE FUNCTION public.admin_eliminar_receta(
   p_receta_id UUID,
   p_admin_id UUID
@@ -26,7 +27,34 @@ BEGIN
     RAISE EXCEPTION 'No tienes permisos de administrador';
   END IF;
   
-  -- Eliminar la receta
+  -- ============================================================
+  -- ELIMINAR DEPENDENCIAS EN ORDEN (evitar FK constraint)
+  -- ============================================================
+  
+  -- 1. Eliminar interacciones (likes, guardados)
+  DELETE FROM recetas_interacciones WHERE receta_id = p_receta_id;
+  
+  -- 2. Eliminar calificaciones
+  DELETE FROM recetas_calificaciones WHERE receta_id = p_receta_id;
+  
+  -- 3. Eliminar imágenes
+  DELETE FROM recetas_imagenes WHERE receta_id = p_receta_id;
+  
+  -- 4. Eliminar videos
+  DELETE FROM recetas_videos WHERE receta_id = p_receta_id;
+  
+  -- 5. Eliminar reportes asociados
+  DELETE FROM reportes_recetas WHERE receta_id = p_receta_id;
+  
+  -- 6. Notificaciones: solo nullificar referencia (no eliminar para historial)
+  UPDATE notificaciones SET receta_id = NULL WHERE receta_id = p_receta_id;
+  
+  -- 7. Nullificar referencias de recetas duplicadas
+  UPDATE recetas SET receta_original_id = NULL WHERE receta_original_id = p_receta_id;
+  
+  -- ============================================================
+  -- AHORA SÍ ELIMINAR LA RECETA
+  -- ============================================================
   DELETE FROM recetas WHERE id = p_receta_id;
   
   RETURN TRUE;
