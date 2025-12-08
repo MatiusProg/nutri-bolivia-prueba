@@ -39,6 +39,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Actualizar perfil para usuarios existentes que ya tienen sesión
+      if (session?.user) {
+        createOrUpdateProfile(session.user);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -46,9 +51,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const createOrUpdateProfile = async (user: User) => {
     try {
-      // Table will be created via SQL migration
-      // This is prepared for when tables are set up
-      console.log('Profile ready for:', user.email);
+      // Extraer datos del usuario de Google/Facebook
+      const fullName = user.user_metadata?.full_name 
+        || user.user_metadata?.name 
+        || user.email?.split('@')[0] 
+        || 'Usuario';
+      
+      const avatarUrl = user.user_metadata?.avatar_url 
+        || user.user_metadata?.picture 
+        || '';
+
+      // Upsert en la tabla perfiles
+      const { error } = await supabase
+        .from('perfiles')
+        .upsert({
+          id: user.id,
+          nombre_completo: fullName,
+          avatar_url: avatarUrl,
+        }, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
+        });
+
+      if (error) {
+        console.error('Error creando/actualizando perfil:', error);
+      }
     } catch (error) {
       console.error('Error with profile:', error);
     }
