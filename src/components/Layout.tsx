@@ -79,8 +79,12 @@ export default function Layout() {
               </Link>
             </div>
 
-            {/* Mobile Menu */}
-            <div className="flex items-center gap-3">
+            {/* Acciones de usuario */}
+            <div className="flex items-center gap-2">
+              {/* Notificaciones - visible en móvil Y desktop */}
+              {user && <CentroNotificaciones />}
+              
+              {/* Menú hamburguesa - solo móvil */}
               <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild className="md:hidden">
                   <Button variant="ghost" size="icon">
@@ -188,8 +192,6 @@ export default function Layout() {
 
               {/* Desktop User Menu */}
               <div className="hidden md:flex items-center gap-2">
-                {user && <CentroNotificaciones />}
-                
                 {user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

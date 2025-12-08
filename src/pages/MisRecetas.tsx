@@ -145,22 +145,22 @@ export default function MisRecetas() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-xl">
-              <ChefHat className="h-8 w-8 text-primary" />
+            <div className="p-2 sm:p-3 bg-primary/10 rounded-xl">
+              <ChefHat className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 Mis Recetas
               </h1>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-sm sm:text-base text-muted-foreground mt-1">
                 Gestiona tus recetas personalizadas
               </p>
             </div>
           </div>
 
-          <Button onClick={() => navigate('/recetas/nueva')} size="lg" className="gap-2">
+          <Button onClick={() => navigate('/recetas/nueva')} size="lg" className="w-full sm:w-auto gap-2">
             <Plus className="h-5 w-5" />
             Nueva Receta
           </Button>
