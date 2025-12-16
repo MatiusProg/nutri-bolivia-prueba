@@ -5,6 +5,10 @@ import { useAuth } from '@/hooks/useAuth';
 // Sonido de notificación (base64 encoded small notification sound)
 const NOTIFICATION_SOUND = '/notification.mp3';
 
+// 🔇 TEMPORAL: Desactivar sonido de notificaciones
+// Cambiar a 'true' para reactivar
+const SONIDO_HABILITADO = false;
+
 interface UseNotificacionesGlobalesReturn {
   contadorNoLeidas: number;
   hayNuevas: boolean;
@@ -91,7 +95,10 @@ export function useNotificacionesGlobales(): UseNotificacionesGlobalesReturn {
       // Detectar si llegó una nueva notificación
       if (nuevoContador > prevContadorRef.current && prevContadorRef.current > 0) {
         setHayNuevas(true);
-        reproducirSonido();
+        // Solo reproducir si el sonido está habilitado
+        if (SONIDO_HABILITADO) {
+          reproducirSonido();
+        }
       }
       
       prevContadorRef.current = nuevoContador;
