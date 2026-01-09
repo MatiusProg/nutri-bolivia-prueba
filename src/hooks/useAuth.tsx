@@ -68,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: user.id,
           nombre_completo: fullName,
           avatar_url: avatarUrl,
+          email: user.email || '',
         }, { 
           onConflict: 'id',
           ignoreDuplicates: false 
