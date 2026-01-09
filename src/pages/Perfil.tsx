@@ -129,7 +129,7 @@ export default function Perfil() {
 
         // Cargar calificaciones dadas por el usuario
         const { count: calificacionesDadas } = await (supabase as any)
-          .from("calificaciones")
+          .from("recetas_calificaciones")
           .select("*", { count: "exact", head: true })
           .eq("usuario_id", user.id);
 
@@ -139,7 +139,7 @@ export default function Perfil() {
 
         if (recetaIds.length > 0) {
           const { data: calificacionesRecibidas } = await (supabase as any)
-            .from("calificaciones")
+            .from("recetas_calificaciones")
             .select("puntuacion")
             .in("receta_id", recetaIds);
 
