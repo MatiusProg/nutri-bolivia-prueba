@@ -61,11 +61,11 @@ interface IngredienteDetallado {
   cantidad_g: number;
   alimento?: any;
   nutrientes: {
-    energia_kcal: number;
-    proteinas_g: number;
-    grasas_g: number;
-    hidratoscarbonototal_g: number;
-    fibracruda_g: number;
+    energia_kcal: number | null;
+    proteinas_g: number | null;
+    grasas_g: number | null;
+    hidratoscarbonototal_g: number | null;
+    fibracruda_g: number | null;
   };
 }
 
@@ -175,11 +175,11 @@ export default function RecetaDetalle() {
           cantidad_g: ing.cantidad_g,
           alimento,
           nutrientes: nutrientesGuardados || {
-            energia_kcal: (alimento?.energia_kcal || 0) * factor,
-            proteinas_g: (alimento?.proteinas_g || 0) * factor,
-            grasas_g: (alimento?.grasas_g || 0) * factor,
-            hidratoscarbonototal_g: (alimento?.hidratoscarbonototal_g || 0) * factor,
-            fibracruda_g: (alimento?.fibracruda_g || 0) * factor,
+            energia_kcal: alimento?.energia_kcal != null ? alimento.energia_kcal * factor : null,
+            proteinas_g: alimento?.proteinas_g != null ? alimento.proteinas_g * factor : null,
+            grasas_g: alimento?.grasas_g != null ? alimento.grasas_g * factor : null,
+            hidratoscarbonototal_g: alimento?.hidratoscarbonototal_g != null ? alimento.hidratoscarbonototal_g * factor : null,
+            fibracruda_g: alimento?.fibracruda_g != null ? alimento.fibracruda_g * factor : null,
           },
         };
       });
@@ -481,28 +481,28 @@ export default function RecetaDetalle() {
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div className="text-center p-2 bg-background rounded">
                       <p className="text-xs text-muted-foreground">Energía</p>
-                      <p className="font-semibold">{ing.nutrientes.energia_kcal.toFixed(0)}</p>
+                      <p className="font-semibold">{ing.nutrientes.energia_kcal != null ? ing.nutrientes.energia_kcal.toFixed(0) : 'N/D'}</p>
                       <p className="text-xs text-muted-foreground">kcal</p>
                     </div>
                     <div className="text-center p-2 bg-background rounded">
                       <p className="text-xs text-muted-foreground">Proteínas</p>
-                      <p className="font-semibold">{ing.nutrientes.proteinas_g.toFixed(1)}</p>
+                      <p className="font-semibold">{ing.nutrientes.proteinas_g != null ? ing.nutrientes.proteinas_g.toFixed(1) : 'N/D'}</p>
                       <p className="text-xs text-muted-foreground">g</p>
                     </div>
                     <div className="text-center p-2 bg-background rounded">
                       <p className="text-xs text-muted-foreground">Carbos</p>
-                      <p className="font-semibold">{ing.nutrientes.hidratoscarbonototal_g.toFixed(1)}</p>
+                      <p className="font-semibold">{ing.nutrientes.hidratoscarbonototal_g != null ? ing.nutrientes.hidratoscarbonototal_g.toFixed(1) : 'N/D'}</p>
                       <p className="text-xs text-muted-foreground">g</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-sm mt-2">
                     <div className="text-center p-2 bg-background rounded">
                       <p className="text-xs text-muted-foreground">Grasas</p>
-                      <p className="font-semibold">{ing.nutrientes.grasas_g.toFixed(1)}g</p>
+                      <p className="font-semibold">{ing.nutrientes.grasas_g != null ? `${ing.nutrientes.grasas_g.toFixed(1)}g` : 'N/D'}</p>
                     </div>
                     <div className="text-center p-2 bg-background rounded">
                       <p className="text-xs text-muted-foreground">Fibra</p>
-                      <p className="font-semibold">{ing.nutrientes.fibracruda_g.toFixed(1)}g</p>
+                      <p className="font-semibold">{ing.nutrientes.fibracruda_g != null ? `${ing.nutrientes.fibracruda_g.toFixed(1)}g` : 'N/D'}</p>
                     </div>
                   </div>
                 </div>
@@ -528,11 +528,11 @@ export default function RecetaDetalle() {
                     <TableRow key={index}>
                       <TableCell className="font-medium">{ing.nombre}</TableCell>
                       <TableCell className="text-right">{ing.cantidad_g}g</TableCell>
-                      <TableCell className="text-right">{ing.nutrientes.energia_kcal.toFixed(0)} kcal</TableCell>
-                      <TableCell className="text-right">{ing.nutrientes.proteinas_g.toFixed(1)}g</TableCell>
-                      <TableCell className="text-right">{ing.nutrientes.grasas_g.toFixed(1)}g</TableCell>
-                      <TableCell className="text-right">{ing.nutrientes.hidratoscarbonototal_g.toFixed(1)}g</TableCell>
-                      <TableCell className="text-right">{ing.nutrientes.fibracruda_g.toFixed(1)}g</TableCell>
+                      <TableCell className="text-right">{ing.nutrientes.energia_kcal != null ? `${ing.nutrientes.energia_kcal.toFixed(0)} kcal` : 'N/D'}</TableCell>
+                      <TableCell className="text-right">{ing.nutrientes.proteinas_g != null ? `${ing.nutrientes.proteinas_g.toFixed(1)}g` : 'N/D'}</TableCell>
+                      <TableCell className="text-right">{ing.nutrientes.grasas_g != null ? `${ing.nutrientes.grasas_g.toFixed(1)}g` : 'N/D'}</TableCell>
+                      <TableCell className="text-right">{ing.nutrientes.hidratoscarbonototal_g != null ? `${ing.nutrientes.hidratoscarbonototal_g.toFixed(1)}g` : 'N/D'}</TableCell>
+                      <TableCell className="text-right">{ing.nutrientes.fibracruda_g != null ? `${ing.nutrientes.fibracruda_g.toFixed(1)}g` : 'N/D'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -21,6 +21,36 @@ export function AvatarUpload({
   const [preview, setPreview] = useState<string | null>(avatarActual);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Limpiar avatares antiguos del storage
+  const limpiarAvataresAntiguos = async (userId: string) => {
+    try {
+      const { data: archivos, error: listError } = await supabase.storage
+        .from("recetas-imagenes")
+        .list(`avatares/${userId}`);
+      
+      if (listError) {
+        console.warn("Error listando avatares:", listError);
+        return;
+      }
+      
+      if (archivos && archivos.length > 0) {
+        const pathsAEliminar = archivos.map(
+          (archivo) => `avatares/${userId}/${archivo.name}`
+        );
+        
+        const { error: deleteError } = await supabase.storage
+          .from("recetas-imagenes")
+          .remove(pathsAEliminar);
+        
+        if (deleteError) {
+          console.warn("Error eliminando avatares antiguos:", deleteError);
+        }
+      }
+    } catch (error) {
+      console.warn("Error en limpieza de avatares:", error);
+    }
+  };
+
   // Comprimir imagen para avatar (máx 512px)
   const compressImage = async (file: File): Promise<File> => {
     return new Promise((resolve) => {
@@ -84,6 +114,9 @@ export function AvatarUpload({
     setUploading(true);
 
     try {
+      // Limpiar avatares anteriores antes de subir el nuevo
+      await limpiarAvataresAntiguos(user.id);
+      
       // Comprimir imagen
       const compressedFile = await compressImage(file);
 
@@ -118,7 +151,10 @@ export function AvatarUpload({
     }
   };
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
+    if (user) {
+      await limpiarAvataresAntiguos(user.id);
+    }
     setPreview(null);
     onAvatarEliminado();
     if (fileInputRef.current) {
