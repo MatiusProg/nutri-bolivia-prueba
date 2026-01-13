@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, Heart, Bookmark, Loader2, Search, SlidersHorizontal, Clock, ChefHat, Copy } from "lucide-react";
+import { Users, Heart, Bookmark, Loader2, Search, Clock, ChefHat, Copy } from "lucide-react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { RecetaCardImagen } from "@/components/recetas/RecetaCardImagen";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client-unsafe";
 import { toast } from "@/hooks/use-toast";
@@ -44,10 +44,36 @@ export default function Comunidad() {
   const [copiarModalOpen, setCopiarModalOpen] = useState(false);
   const [recetaACopiar, setRecetaACopiar] = useState<any>(null);
 
-  // Estados de filtros
+// Estados de filtros
   const [busqueda, setBusqueda] = useState("");
   const [filtroDificultad, setFiltroDificultad] = useState<TDificultad | "todas">("todas");
   const [ordenarPor, setOrdenarPor] = useState<"fecha" | "popularidad" | "tiempo">("fecha");
+  const [etiquetaActiva, setEtiquetaActiva] = useState<string | null>(null);
+
+  // Configuración visual de etiquetas
+  const ETIQUETAS_UI: Record<string, { label: string; emoji: string }> = {
+    "vegetariano": { label: "Vegetariano", emoji: "🥗" },
+    "vegano": { label: "Vegano", emoji: "🌱" },
+    "sin-gluten": { label: "Sin Gluten", emoji: "🚫" },
+    "bajo-carbohidratos": { label: "Bajo Carbs", emoji: "📉" },
+    "alto-proteinas": { label: "Alto Proteína", emoji: "💪" },
+    "rapido": { label: "Rápido", emoji: "⚡" },
+    "economico": { label: "Económico", emoji: "💰" },
+    "tradicional": { label: "Tradicional", emoji: "🏛️" },
+    "saludable": { label: "Saludable", emoji: "❤️" },
+    "postres": { label: "Postres", emoji: "🍰" },
+  };
+
+  // Contar etiquetas de las recetas cargadas
+  const contarEtiquetas = useMemo(() => {
+    const conteo: Record<string, number> = {};
+    recetas.forEach(receta => {
+      receta.etiquetas?.forEach(etiqueta => {
+        conteo[etiqueta] = (conteo[etiqueta] || 0) + 1;
+      });
+    });
+    return conteo;
+  }, [recetas]);
 
   useEffect(() => {
     trackPageView('Comunidad');
@@ -232,21 +258,35 @@ export default function Comunidad() {
 
   const recetasFiltradas = useMemo(() => {
     let resultado = [...recetas];
+    
+    // Filtro por búsqueda
     if (busqueda.trim()) {
       const b = busqueda.toLowerCase();
       resultado = resultado.filter(
         (r) => r.nombre.toLowerCase().includes(b) || r.descripcion?.toLowerCase().includes(b),
       );
     }
-    if (filtroDificultad !== "todas") resultado = resultado.filter((r) => r.dificultad === filtroDificultad);
+    
+    // Filtro por dificultad
+    if (filtroDificultad !== "todas") {
+      resultado = resultado.filter((r) => r.dificultad === filtroDificultad);
+    }
+    
+    // Filtro por etiqueta activa
+    if (etiquetaActiva) {
+      resultado = resultado.filter((r) => r.etiquetas?.includes(etiquetaActiva));
+    }
+    
+    // Ordenamiento
     resultado.sort((a, b) => {
       if (ordenarPor === "popularidad")
         return b.contador_likes + b.contador_guardados - (a.contador_likes + a.contador_guardados);
       if (ordenarPor === "tiempo") return (a.tiempo_preparacion || 9999) - (b.tiempo_preparacion || 9999);
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
+    
     return resultado;
-  }, [recetas, busqueda, filtroDificultad, ordenarPor]);
+  }, [recetas, busqueda, filtroDificultad, ordenarPor, etiquetaActiva]);
 
   if (loading)
     return (
@@ -308,6 +348,48 @@ export default function Comunidad() {
             </Select>
           </div>
         </div>
+
+        {/* Etiquetas flotantes */}
+        {Object.keys(contarEtiquetas).length > 0 && (
+          <div className="mt-4 -mx-4 px-4 md:mx-0 md:px-0">
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex gap-2 pb-3">
+                {/* Botón "Todas" */}
+                <Badge
+                  variant={etiquetaActiva === null ? "default" : "outline"}
+                  className={cn(
+                    "cursor-pointer shrink-0 px-3 py-1.5 text-sm transition-all hover:scale-105",
+                    etiquetaActiva === null && "ring-2 ring-primary/50"
+                  )}
+                  onClick={() => setEtiquetaActiva(null)}
+                >
+                  📋 Todas ({recetas.length})
+                </Badge>
+
+                {/* Etiquetas ordenadas por popularidad */}
+                {Object.entries(contarEtiquetas)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([etiqueta, cantidad]) => {
+                    const config = ETIQUETAS_UI[etiqueta];
+                    return (
+                      <Badge
+                        key={etiqueta}
+                        variant={etiquetaActiva === etiqueta ? "default" : "outline"}
+                        className={cn(
+                          "cursor-pointer shrink-0 px-3 py-1.5 text-sm transition-all hover:scale-105",
+                          etiquetaActiva === etiqueta && "ring-2 ring-primary/50"
+                        )}
+                        onClick={() => setEtiquetaActiva(etiquetaActiva === etiqueta ? null : etiqueta)}
+                      >
+                        {config?.emoji || "🏷️"} {config?.label || etiqueta} ({cantidad})
+                      </Badge>
+                    );
+                  })}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </div>
+        )}
       </div>
 
       {recetasFiltradas.length === 0 ? (
