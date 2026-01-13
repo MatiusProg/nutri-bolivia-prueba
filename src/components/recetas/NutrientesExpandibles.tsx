@@ -11,7 +11,7 @@ interface NutrientesExpandiblesProps {
 
 interface NutrienteCompleto {
   nombre: string;
-  valor: number;
+  valor: number | null;
   unidad: string;
   categoria: 'principal' | 'minerales' | 'vitaminas' | 'otros';
 }
@@ -23,34 +23,34 @@ export function NutrientesExpandibles({ nutrientes, ingredientesDetallados }: Nu
   const calcularNutrientesCompletos = (): NutrienteCompleto[] => {
     const nutrientesCompletos: Record<string, NutrienteCompleto> = {};
 
-    // Inicializar con los principales
+    // Inicializar con los principales - usar ?? null para distinguir de 0
     nutrientesCompletos['energia_kcal'] = {
       nombre: 'Energía',
-      valor: nutrientes.energia_kcal || 0,
+      valor: nutrientes.energia_kcal ?? null,
       unidad: 'kcal',
       categoria: 'principal'
     };
     nutrientesCompletos['proteinas_g'] = {
       nombre: 'Proteínas',
-      valor: nutrientes.proteinas_g || 0,
+      valor: nutrientes.proteinas_g ?? null,
       unidad: 'g',
       categoria: 'principal'
     };
     nutrientesCompletos['hidratoscarbonototal_g'] = {
       nombre: 'Carbohidratos',
-      valor: nutrientes.hidratoscarbonototal_g || 0,
+      valor: nutrientes.hidratoscarbonototal_g ?? null,
       unidad: 'g',
       categoria: 'principal'
     };
     nutrientesCompletos['grasas_g'] = {
       nombre: 'Grasas',
-      valor: nutrientes.grasas_g || 0,
+      valor: nutrientes.grasas_g ?? null,
       unidad: 'g',
       categoria: 'principal'
     };
     nutrientesCompletos['fibracruda_g'] = {
       nombre: 'Fibra',
-      valor: nutrientes.fibracruda_g || 0,
+      valor: nutrientes.fibracruda_g ?? null,
       unidad: 'g',
       categoria: 'principal'
     };
@@ -95,7 +95,8 @@ export function NutrientesExpandibles({ nutrientes, ingredientesDetallados }: Nu
 
       [...minerales, ...vitaminas, ...otros].forEach(({ key, nombre, unidad, categoria }) => {
         const valor = alimento[key];
-        if (valor !== undefined && valor !== null && valor > 0) {
+        // Solo agregar si el valor existe y no es null (0 es válido)
+        if (valor !== undefined && valor !== null) {
           if (!nutrientesCompletos[key]) {
             nutrientesCompletos[key] = {
               nombre,
@@ -104,12 +105,15 @@ export function NutrientesExpandibles({ nutrientes, ingredientesDetallados }: Nu
               categoria
             };
           }
-          nutrientesCompletos[key].valor += valor * factor;
+          nutrientesCompletos[key].valor = (nutrientesCompletos[key].valor || 0) + valor * factor;
         }
       });
     });
 
-    return Object.values(nutrientesCompletos).filter(n => n.valor > 0);
+    // Filtrar: para secundarios excluir null, para principales mantener
+    return Object.values(nutrientesCompletos).filter(n => 
+      n.categoria === 'principal' || (n.valor !== null && n.valor !== undefined)
+    );
   };
 
   const todosNutrientes = calcularNutrientesCompletos();
@@ -120,11 +124,18 @@ export function NutrientesExpandibles({ nutrientes, ingredientesDetallados }: Nu
   const vitaminas = secundarios.filter(n => n.categoria === 'vitaminas');
   const otros = secundarios.filter(n => n.categoria === 'otros');
 
-  const formatearValor = (valor: number, unidad: string) => {
+  // Formatear valor - distinguir null de 0
+  const formatearValor = (valor: number | null, unidad: string): string => {
+    if (valor === null || valor === undefined) return 'N/D';
     if (unidad === 'kcal') return valor.toFixed(0);
     if (unidad === 'g') return valor.toFixed(1);
     if (unidad === 'mg' || unidad === 'µg') return valor.toFixed(2);
     return valor.toFixed(2);
+  };
+  
+  // Verificar si un valor es numérico válido (incluye 0)
+  const esValorValido = (valor: number | null): boolean => {
+    return valor !== null && valor !== undefined;
   };
 
   return (
@@ -134,12 +145,14 @@ export function NutrientesExpandibles({ nutrientes, ingredientesDetallados }: Nu
         <div className="p-4 bg-primary/10 rounded-lg">
           <p className="text-sm text-muted-foreground mb-1">Energía Total</p>
           <p className="text-3xl font-bold text-primary">
-            {formatearValor(nutrientes.energia_kcal || 0, 'kcal')} kcal
+            {esValorValido(nutrientes.energia_kcal) 
+              ? `${formatearValor(nutrientes.energia_kcal, 'kcal')} kcal`
+              : 'N/D'}
           </p>
         </div>
 
         <div className="space-y-3">
-          {principales.slice(1).map((nutriente) => (
+          {principales.slice(1).filter(n => esValorValido(n.valor)).map((nutriente) => (
             <div key={nutriente.nombre} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
               <span className="font-medium">{nutriente.nombre}</span>
               <span className="text-lg font-semibold">

@@ -4,13 +4,13 @@
  */
 
 export interface INutrientesTotales {
-  energia_kcal: number;
-  proteinas_g: number;
-  grasas_g: number;
-  hidratoscarbonototal_g: number;
-  fibracruda_g?: number;
-  calcio_mg?: number;
-  hierro_mg?: number;
+  energia_kcal: number | null;
+  proteinas_g: number | null;
+  grasas_g: number | null;
+  hidratoscarbonototal_g: number | null;
+  fibracruda_g?: number | null;
+  calcio_mg?: number | null;
+  hierro_mg?: number | null;
 }
 
 export interface IIngrediente {

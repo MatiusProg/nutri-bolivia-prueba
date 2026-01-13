@@ -103,21 +103,25 @@ export default function RecipeBuilder() {
   };
 
   const calculateNutrients = () => {
-    const totals = {
-      energia_kcal: 0,
-      proteinas_g: 0,
-      grasas_g: 0,
-      hidratoscarbonototal_g: 0,
-      fibracruda_g: 0,
+    const totals: Record<string, number | null> = {
+      energia_kcal: null,
+      proteinas_g: null,
+      grasas_g: null,
+      hidratoscarbonototal_g: null,
+      fibracruda_g: null,
     };
 
     ingredients.forEach(({ alimento, cantidad_g }) => {
       const factor = cantidad_g / 100;
-      totals.energia_kcal += (alimento.energia_kcal || 0) * factor;
-      totals.proteinas_g += (alimento.proteinas_g || 0) * factor;
-      totals.grasas_g += (alimento.grasas_g || 0) * factor;
-      totals.hidratoscarbonototal_g += (alimento.hidratoscarbonototal_g || 0) * factor;
-      totals.fibracruda_g += (alimento.fibracruda_g || 0) * factor;
+      
+      // Solo sumar si el valor del alimento no es null/undefined
+      Object.keys(totals).forEach(key => {
+        const valorAlimento = alimento[key];
+        if (valorAlimento !== null && valorAlimento !== undefined) {
+          // Si totals[key] es null, inicializamos a 0 antes de sumar
+          totals[key] = (totals[key] ?? 0) + valorAlimento * factor;
+        }
+      });
     });
 
     return totals;
@@ -174,11 +178,11 @@ export default function RecipeBuilder() {
           nombre_alimento: alimento.nombre_alimento,
           cantidad_g,
           nutrientes: {
-            energia_kcal: (alimento.energia_kcal || 0) * factor,
-            proteinas_g: (alimento.proteinas_g || 0) * factor,
-            grasas_g: (alimento.grasas_g || 0) * factor,
-            hidratoscarbonototal_g: (alimento.hidratoscarbonototal_g || 0) * factor,
-            fibracruda_g: (alimento.fibracruda_g || 0) * factor,
+            energia_kcal: alimento.energia_kcal != null ? alimento.energia_kcal * factor : null,
+            proteinas_g: alimento.proteinas_g != null ? alimento.proteinas_g * factor : null,
+            grasas_g: alimento.grasas_g != null ? alimento.grasas_g * factor : null,
+            hidratoscarbonototal_g: alimento.hidratoscarbonototal_g != null ? alimento.hidratoscarbonototal_g * factor : null,
+            fibracruda_g: alimento.fibracruda_g != null ? alimento.fibracruda_g * factor : null,
           }
         };
       });
@@ -457,27 +461,31 @@ export default function RecipeBuilder() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Energía</span>
                     <Badge variant="secondary" className="text-base">
-                      {nutrients.energia_kcal.toFixed(0)} kcal
+                      {nutrients.energia_kcal != null ? `${nutrients.energia_kcal.toFixed(0)} kcal` : 'N/D'}
                     </Badge>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Proteínas</span>
-                    <span className="font-semibold">{nutrients.proteinas_g.toFixed(1)}g</span>
+                    <span className="font-semibold">
+                      {nutrients.proteinas_g != null ? `${nutrients.proteinas_g.toFixed(1)}g` : 'N/D'}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Carbohidratos</span>
                     <span className="font-semibold">
-                      {nutrients.hidratoscarbonototal_g.toFixed(1)}g
+                      {nutrients.hidratoscarbonototal_g != null ? `${nutrients.hidratoscarbonototal_g.toFixed(1)}g` : 'N/D'}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Grasas</span>
-                    <span className="font-semibold">{nutrients.grasas_g.toFixed(1)}g</span>
+                    <span className="font-semibold">
+                      {nutrients.grasas_g != null ? `${nutrients.grasas_g.toFixed(1)}g` : 'N/D'}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm">Fibra</span>
                     <span className="font-semibold">
-                      {nutrients.fibracruda_g.toFixed(1)}g
+                      {nutrients.fibracruda_g != null ? `${nutrients.fibracruda_g.toFixed(1)}g` : 'N/D'}
                     </span>
                   </div>
                 </div>

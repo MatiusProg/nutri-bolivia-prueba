@@ -59,8 +59,11 @@ export default function AlimentoDetailModal({
   // Convertir la cantidad ingresada a gramos
   const gramosEquivalentes = cantidad * conversionRates[unidad];
 
-  const calcular = (valor: number | null) => {
-    if (!valor) return '0.00';
+  // Calcular valor nutricional - distinguir NULL de 0
+  const calcular = (valor: number | null | undefined): string | null => {
+    // NULL o undefined = dato no disponible
+    if (valor === null || valor === undefined) return null;
+    // Valor numérico (incluido 0) = dato válido
     return ((valor * gramosEquivalentes) / 100).toFixed(2);
   };
 
@@ -165,7 +168,9 @@ export default function AlimentoDetailModal({
                 {categoria.categoria}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {categoria.items.map((item) => (
+                {categoria.items
+                  .filter(item => calcular(item.valor) !== null)
+                  .map((item) => (
                   <div
                     key={item.nombre}
                     className="flex justify-between items-center p-3 bg-secondary/30 rounded-lg hover:bg-secondary/40 transition-colors"
