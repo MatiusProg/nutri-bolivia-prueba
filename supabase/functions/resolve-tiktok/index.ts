@@ -76,6 +76,22 @@ serve(async (req) => {
 
     const finalUrl = response.url || url;
 
+    // Validate that redirects didn't escape the TikTok domain
+    try {
+      const finalParsed = new URL(finalUrl);
+      if (!allowedHosts.has(finalParsed.hostname.toLowerCase())) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'La URL redirige a un dominio no permitido.' }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: 'URL final inválida.' }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     // Extract numeric video id from final URL
     const match = finalUrl.match(/\/video\/(\d+)/);
     if (!match) {
