@@ -31,8 +31,40 @@ serve(async (req) => {
       });
     }
 
-    // Follow redirects server-side to resolve short links
-    const response = await fetch(url, {
+    // SSRF protection: validate URL and restrict to TikTok hosts only
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      return new Response(JSON.stringify({ success: false, error: 'URL malformada' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+      return new Response(JSON.stringify({ success: false, error: 'Protocolo no permitido' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    const allowedHosts = new Set([
+      'tiktok.com',
+      'www.tiktok.com',
+      'm.tiktok.com',
+      'vm.tiktok.com',
+      'vt.tiktok.com',
+    ]);
+    if (!allowedHosts.has(parsedUrl.hostname.toLowerCase())) {
+      return new Response(JSON.stringify({ success: false, error: 'Dominio no permitido. Solo se aceptan URLs de TikTok.' }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+
+    // Follow redirects server-side to resolve short links, but validate each hop
+    const response = await fetch(parsedUrl.toString(), {
       redirect: 'follow',
       headers: {
         // Set a common UA to avoid anti-bot blocks
@@ -43,6 +75,22 @@ serve(async (req) => {
     });
 
     const finalUrl = response.url || url;
+
+    // Validate that redirects didn't escape the TikTok domain
+    try {
+      const finalParsed = new URL(finalUrl);
+      if (!allowedHosts.has(finalParsed.hostname.toLowerCase())) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'La URL redirige a un dominio no permitido.' }),
+          { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+    } catch {
+      return new Response(
+        JSON.stringify({ success: false, error: 'URL final inválida.' }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     // Extract numeric video id from final URL
     const match = finalUrl.match(/\/video\/(\d+)/);
