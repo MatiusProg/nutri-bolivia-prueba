@@ -76,9 +76,13 @@ export default function Comunidad() {
   }, [recetas]);
 
   useEffect(() => {
+    // Esperar a que la sesion de auth termine de restaurarse antes de
+    // hacer queries (evita race condition: JWT aun no adjunto al cliente)
+    if (authLoading) return;
+
     trackPageView('Comunidad');
     loadRecetas();
-    
+
     // Escuchar eventos de actualización
     const handleRecetasActualizadas = () => {
       console.log("🔄 Evento recetasActualizadas recibido en Comunidad");
@@ -87,7 +91,7 @@ export default function Comunidad() {
 
     window.addEventListener("recetasActualizadas", handleRecetasActualizadas);
     return () => window.removeEventListener("recetasActualizadas", handleRecetasActualizadas);
-  }, [trackPageView]);
+  }, [trackPageView, authLoading]);
 
   useEffect(() => {
     if (user) {
