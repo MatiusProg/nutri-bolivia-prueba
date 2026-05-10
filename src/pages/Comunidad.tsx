@@ -33,7 +33,7 @@ type RecetaConPromedios = IRecetaConPerfil & {
 };
 
 export default function Comunidad() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { trackPageView, trackRecipeView } = useAnalytics();
   const [recetas, setRecetas] = useState<RecetaConPromedios[]>([]);
